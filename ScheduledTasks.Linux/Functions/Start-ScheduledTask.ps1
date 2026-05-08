@@ -26,6 +26,7 @@ function Start-ScheduledTask {
         [string]$TaskPath = '\'
     )
 
+    process {
     if (-not $IsLinux) {
         ScheduledTasks\Start-ScheduledTask @PSBoundParameters
         return
@@ -42,4 +43,5 @@ function Start-ScheduledTask {
     } else {
         & systemctl --user start "$unitName.service" 2>$null
     }
+    } # end process
 }

@@ -26,6 +26,7 @@ function Stop-ScheduledTask {
         [string]$TaskPath = '\'
     )
 
+    process {
     if (-not $IsLinux) {
         ScheduledTasks\Stop-ScheduledTask @PSBoundParameters
         return
@@ -42,4 +43,5 @@ function Stop-ScheduledTask {
     } else {
         & systemctl --user stop "$unitName.service" 2>$null
     }
+    } # end process
 }

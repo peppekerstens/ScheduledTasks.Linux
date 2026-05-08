@@ -27,6 +27,7 @@ function Enable-ScheduledTask {
         [string]$TaskPath = '\'
     )
 
+    process {
     if (-not $IsLinux) {
         ScheduledTasks\Enable-ScheduledTask @PSBoundParameters
         return
@@ -47,4 +48,5 @@ function Enable-ScheduledTask {
     }
 
     Get-ScheduledTask -TaskName $TaskName
+    } # end process
 }

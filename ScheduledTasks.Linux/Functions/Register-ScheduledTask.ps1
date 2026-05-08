@@ -64,6 +64,7 @@ function Register-ScheduledTask {
         [switch]$Force
     )
 
+    process {
     if (-not $IsLinux) {
         ScheduledTasks\Register-ScheduledTask @PSBoundParameters
         return
@@ -200,4 +201,5 @@ WantedBy=timers.target
 
     # Return a task object
     Get-ScheduledTask -TaskName $TaskName
+    } # end process
 }

@@ -55,7 +55,7 @@ function Get-ScheduledTaskInfo {
             try {
                 $usec = [long]$props['LastTriggerUSec']
                 $lastRun = [datetime]::UnixEpoch.AddMicroseconds($usec).ToLocalTime()
-            } catch { }
+            } catch { Write-Debug $_.Exception.Message }
         }
 
         # Parse next elapse time
@@ -64,7 +64,7 @@ function Get-ScheduledTaskInfo {
             try {
                 $usec = [long]$props['NextElapseUSecRealtime']
                 $nextRun = [datetime]::UnixEpoch.AddMicroseconds($usec).ToLocalTime()
-            } catch { }
+            } catch { Write-Debug $_.Exception.Message }
         }
 
         [PSCustomObject]@{

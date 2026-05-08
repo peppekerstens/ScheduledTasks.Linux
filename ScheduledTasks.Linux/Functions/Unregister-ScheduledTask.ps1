@@ -28,13 +28,13 @@ function Unregister-ScheduledTask {
         [string]$TaskPath = '\'
     )
 
+    process {
     if (-not $IsLinux) {
         ScheduledTasks\Unregister-ScheduledTask @PSBoundParameters
         return
     }
 
     if (-not $PSCmdlet.ShouldProcess($TaskName, 'Unregister-ScheduledTask')) { return }
-
     $unitName = $TaskName -replace '[^a-zA-Z0-9_\-]', '-'
 
     # Determine unit directories to search
@@ -60,4 +60,5 @@ function Unregister-ScheduledTask {
             Remove-Item -Path $servicePath -Force -ErrorAction SilentlyContinue
         }
     }
+    } # end process
 }

@@ -1,8 +1,7 @@
 #Requires -Modules @{ ModuleName = 'Pester'; ModuleVersion = '5.2.0' }
 
 BeforeAll {
-    $modulePath = Join-Path $PSScriptRoot '..' 'ScheduledTasks.Linux' 'ScheduledTasks.Linux.psd1'
-    $examplesDir = $PSScriptRoot
+    $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\ScheduledTasks.Linux\ScheduledTasks.Linux.psd1'
 
     if ($IsLinux) {
         Import-Module $modulePath -Force

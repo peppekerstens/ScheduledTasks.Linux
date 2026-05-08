@@ -27,6 +27,7 @@ function Disable-ScheduledTask {
         [string]$TaskPath = '\'
     )
 
+    process {
     if (-not $IsLinux) {
         ScheduledTasks\Disable-ScheduledTask @PSBoundParameters
         return
@@ -47,4 +48,5 @@ function Disable-ScheduledTask {
     }
 
     Get-ScheduledTask -TaskName $TaskName
+    } # end process
 }
