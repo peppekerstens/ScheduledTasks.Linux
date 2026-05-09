@@ -14,11 +14,11 @@ BeforeDiscovery {
         'Stop-ScheduledTask',
         'Enable-ScheduledTask',
         'Disable-ScheduledTask',
-        'Unregister-ScheduledTask'
+        'Unregister-ScheduledTask',
+        'Export-ScheduledTask'
     )
     $script:stubCmdlets = @(
-        'Set-ScheduledTask',
-        'Export-ScheduledTask'
+        'Set-ScheduledTask'
     )
     $script:allCmdlets = $script:implementedCmdlets + $script:stubCmdlets
 }
@@ -143,5 +143,27 @@ Describe 'Stub functions' -Skip:(-not $IsLinux) {
 Describe 'Windows passthrough' -Skip:$IsLinux {
     It '<_> is callable on Windows without error' -ForEach $script:allCmdlets {
         { Get-Command -Name $_ } | Should -Not -Throw
+    }
+}
+
+# ---------------------------------------------------------------------------
+Describe 'Export-ScheduledTask' -Skip:(-not $IsLinux) {
+
+    It 'returns string output without error for a known service' {
+        { Export-ScheduledTask -TaskName 'cron' } | Should -Not -Throw
+    }
+
+    It 'returns non-empty string for a known service' {
+        $result = Export-ScheduledTask -TaskName 'cron'
+        $result | Should -Not -BeNullOrEmpty
+    }
+
+    It 'writes an error for a non-existent task' {
+        { Export-ScheduledTask -TaskName 'nonexistent-pester-task-xyz' -ErrorAction Stop } | Should -Throw
+    }
+
+    It 'warns when -TaskPath is specified' {
+        Export-ScheduledTask -TaskName 'cron' -TaskPath '\' -WarningVariable w -WarningAction SilentlyContinue
+        $w | Should -Not -BeNullOrEmpty
     }
 }
