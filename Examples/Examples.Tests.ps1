@@ -78,3 +78,41 @@ Describe 'New-ScheduledTaskTrigger returns expected shape' -Skip:(-not $IsLinux)
         $t.OnCalendar | Should -Be 'boot'
     }
 }
+
+Describe 'Scenario: Scheduled task create/export/disable/remove lifecycle' -Skip:(-not $IsLinux) {
+    BeforeAll {
+        $modulePath = Join-Path (Split-Path $PSScriptRoot -Parent) 'ScheduledTasks.Linux' 'ScheduledTasks.Linux.psd1'
+        Import-Module $modulePath -Force -ErrorAction Stop
+        $script:taskName = 'pester-test-task'
+    }
+    AfterAll {
+        Unregister-ScheduledTask -TaskName $script:taskName -Confirm:$false -ErrorAction SilentlyContinue
+        Remove-Module 'ScheduledTasks.Linux' -Force -ErrorAction SilentlyContinue
+    }
+
+    It 'Register-ScheduledTask creates a systemd timer unit' {
+        $action  = New-ScheduledTaskAction -Execute 'echo' -Argument 'pester'
+        $trigger = New-ScheduledTaskTrigger -Daily -At '03:00'
+        { Register-ScheduledTask -TaskName $script:taskName -Action $action -Trigger $trigger } |
+            Should -Not -Throw
+    }
+    It 'Get-ScheduledTask finds the registered task' {
+        $task = Get-ScheduledTask -TaskName $script:taskName
+        $task | Should -Not -BeNullOrEmpty
+    }
+    It 'Export-ScheduledTask returns unit file content' {
+        $export = Export-ScheduledTask -TaskName $script:taskName
+        $export | Should -Not -BeNullOrEmpty
+        $export | Should -Match '\[Unit\]'
+    }
+    It 'Disable-ScheduledTask disables the task' {
+        { Disable-ScheduledTask -TaskName $script:taskName } | Should -Not -Throw
+    }
+    It 'Enable-ScheduledTask re-enables the task' {
+        { Enable-ScheduledTask -TaskName $script:taskName } | Should -Not -Throw
+    }
+    It 'Unregister-ScheduledTask removes the task' {
+        { Unregister-ScheduledTask -TaskName $script:taskName -Confirm:$false } | Should -Not -Throw
+        { Get-ScheduledTask -TaskName $script:taskName -ErrorAction Stop } | Should -Throw
+    }
+}
