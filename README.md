@@ -71,7 +71,7 @@ Unregister-ScheduledTask -TaskName 'DailyBackup'
 | `New-ScheduledTaskSettingsSet` | ✅ Implemented | — |
 | `New-ScheduledTask` | ✅ Implemented | — |
 | `Register-ScheduledTask` | ✅ Implemented | systemctl, unit files |
-| `Get-ScheduledTask` | ✅ Implemented | systemctl list-timers |
+| `Get-ScheduledTask` | ✅ Implemented | `systemctl list-timers --output=json`, `list-unit-files --output=json`, `systemctl show` |
 | `Get-ScheduledTaskInfo` | ✅ Implemented | systemctl show |
 | `Start-ScheduledTask` | ✅ Implemented | systemctl start |
 | `Stop-ScheduledTask` | ✅ Implemented | systemctl stop |
@@ -99,6 +99,7 @@ Unregister-ScheduledTask -TaskName 'DailyBackup'
 
 | Version | Date | Notes |
 |---|---|---|
+| 0.2.0 | 2026-05-09 | `Get-ScheduledTask` rewritten to use `systemctl list-timers/list-unit-files --output=json`; single bulk `systemctl show` replaces per-timer N+1 calls. Now enumerates all system timers, not only module-created ones. |
 | 0.1.0 | 2026-05-08 | Initial release. 13 cmdlets implemented, 2 stubs. |
 
 ---
@@ -147,7 +148,7 @@ System tasks go to `/etc/systemd/system/` and require `sudo`. User tasks go to `
 
 **Multiple actions are not supported.** Windows `ScheduledTasks` allows a task to have multiple `Action` objects. systemd service units have one `ExecStart`. If multiple actions are passed to `Register-ScheduledTask`, only the first is used, and a `Write-Warning` is emitted. This is documented behavior, not a silent failure.
 
-**`Get-ScheduledTask` only sees tasks created by this module.** It queries `systemctl list-timers` and filters for units that have a corresponding `.service` file in the expected location. It does not enumerate all systemd timers — that would return noisy system-level timers that aren't "scheduled tasks" in the Windows sense.
+**`Get-ScheduledTask` enumerates all systemd timers on the system.** It uses `systemctl list-timers --output=json` and `systemctl list-unit-files --output=json` (both available in systemd 240+), then a single bulk `systemctl show` call for active state, description, and fragment path. This means it returns all timers — system-level ones like `logrotate.timer`, `apt-daily.timer`, etc. — not only tasks created by this module. Filter by `-TaskPath '\'` for system tasks or `-TaskPath '\User\'` for user tasks.
 
 **`Get-ScheduledTaskInfo` uses `systemctl show`.** The `LastRunTime` and `NextRunTime` properties come from the `LastTriggerUSec` and `NextElapseUSecRealtime` fields in `systemctl show`. These are microsecond timestamps that need converting to `[datetime]`.
 
